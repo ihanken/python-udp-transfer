@@ -9,4 +9,5 @@ sys.path.insert(0,
 )
 
 # Place any file imports here.
+import client
 import server
