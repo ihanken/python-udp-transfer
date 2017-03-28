@@ -3,35 +3,30 @@ from context import server
 
 class TestServer(unittest.TestCase):
     def setUp(self):
-        self._serverOne = server.Server("192.168.1.1", 1)
-        self._serverTwo = server.Server("192.168.1.2", 2)
-        self._serverThree = server.Server("192.168.1.3", 3)
+        self.__serverOne = server.Server(["server.py", "192.168.1.1", 4000])
 
     def tearDown(self):
-        del self._serverOne
-        del self._serverTwo
-        del self._serverThree
+        del self.__serverOne
 
-    def testGetters(self):
-        self.assertEqual(self._serverOne.ip, "192.168.1.1")
-        self.assertEqual(self._serverTwo.ip, "192.168.1.2")
-        self.assertEqual(self._serverThree.ip, "192.168.1.3")
+    def testNoArgs(self):
+        with self.assertRaises(IndexError) and self.assertRaises(SystemExit):
+            server.Server(["server.py"])
 
-        self.assertEqual(self._serverOne.port, 1)
-        self.assertEqual(self._serverTwo.port, 2)
-        self.assertEqual(self._serverThree.port, 3)
+    def testNoPort(self):
+        with self.assertRaises(IndexError) and self.assertRaises(SystemExit):
+            server.Server(["server.py", "192.168.1.1"])
 
-    def testSetters(self):
-        self._serverOne.ip = self._serverTwo.ip
-        self._serverThree.ip = self._serverOne.ip
+    def testOutOfRangePort(self):
+        with self.assertRaises(SystemExit):
+            server.Server(["server.py", "192.168.1.1", 1])
 
-        self._serverOne.port = self._serverThree.port
-        self._serverTwo.port = self._serverOne.port
+    def testStringForPort(self):
+        with self.assertRaises(ValueError) and self.assertRaises(SystemExit):
+            server.Server(["server.py", "192.168.1.1", "Test"])
 
-        self.assertEqual(self._serverOne.ip, self._serverThree.ip)
-        self.assertEqual(self._serverThree.ip, self._serverTwo.ip)
-        self.assertEqual(self._serverTwo.ip, self._serverOne.ip)
+    def testValidInitialization(self):
+        server.Server(["server.py", "192.168.1.1", 4000])
 
-        self.assertEqual(self._serverOne.port, self._serverThree.port)
-        self.assertEqual(self._serverThree.port, self._serverTwo.port)
-        self.assertEqual(self._serverTwo.port, self._serverOne.port)
+    def testSendFile(self):
+        self.assertEqual(self.__serverOne.sendFile("file.txt"), "file.txt")
+        self.assertNotEqual(self.__serverOne.sendFile("file1.txt"), "file.txt")
