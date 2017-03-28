@@ -3,35 +3,35 @@ from context import client
 
 class TestClient(unittest.TestCase):
     def setUp(self):
-        self._clientOne = client.Client("192.168.1.1", 1)
-        self._clientTwo = client.Client("192.168.1.2", 2)
-        self._clientThree = client.Client("192.168.1.3", 3)
+        self.__clientOne = client.Client(["client.py", "192.168.1.1", 4000])
 
     def tearDown(self):
-        del self._clientOne
-        del self._clientTwo
-        del self._clientThree
+        del self.__clientOne
 
-    def testGetters(self):
-        self.assertEqual(self._clientOne.ip, "192.168.1.1")
-        self.assertEqual(self._clientTwo.ip, "192.168.1.2")
-        self.assertEqual(self._clientThree.ip, "192.168.1.3")
+    def testNoArgs(self):
+        with self.assertRaises(IndexError) and self.assertRaises(SystemExit):
+            client.Client(["client.py"])
 
-        self.assertEqual(self._clientOne.port, 1)
-        self.assertEqual(self._clientTwo.port, 2)
-        self.assertEqual(self._clientThree.port, 3)
+    def testNoPort(self):
+        with self.assertRaises(IndexError) and self.assertRaises(SystemExit):
+            client.Client(["client.py", "192.168.1.1"])
 
-    def testSetters(self):
-        self._clientOne.ip = self._clientTwo.ip
-        self._clientThree.ip = self._clientOne.ip
+    def testOutOfRangePort(self):
+        with self.assertRaises(SystemExit):
+            client.Client(["client.py", "192.168.1.1", 1])
 
-        self._clientOne.port = self._clientThree.port
-        self._clientTwo.port = self._clientOne.port
+    def testStringForPort(self):
+        with self.assertRaises(ValueError) and self.assertRaises(SystemExit):
+            client.Client(["client.py", "192.168.1.1", "Test"])
 
-        self.assertEqual(self._clientOne.ip, self._clientThree.ip)
-        self.assertEqual(self._clientThree.ip, self._clientTwo.ip)
-        self.assertEqual(self._clientTwo.ip, self._clientOne.ip)
+    def testValidInitialization(self):
+        client.Client(["client.py", "192.168.1.1", 4000])
 
-        self.assertEqual(self._clientOne.port, self._clientThree.port)
-        self.assertEqual(self._clientThree.port, self._clientTwo.port)
-        self.assertEqual(self._clientTwo.port, self._clientOne.port)
+    def testRequestFile(self):
+        self.assertEqual(self.__clientOne.requestFile("testfile.txt"),
+                                                        "testfile.txt")
+
+    def testBeginReceiving(self):
+        self.assertEqual(self.__clientOne.beginReceiving(), 1024)
+        self.assertEqual(self.__clientOne.beginReceiving(1025), 1025)
+        self.assertNotEqual(self.__clientOne.beginReceiving(1025), 1024)
