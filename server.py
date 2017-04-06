@@ -15,6 +15,10 @@ class Server():
                                                     # values.
         self.__socket = None # Set up the socket variable.
 
+    '''
+    This function allows the server to listen to requests through the
+    provided port.
+    '''
     def beginListening(self):
         self.__socket = socket(AF_INET, SOCK_STREAM) # Initialize our socket.
         self.__socket.bind(self.__address) # Bind the socket to the address.

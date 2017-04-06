@@ -16,6 +16,10 @@ class Client():
         self.__address = (self.__ip, self.__port) # Create a tuple from the values.
         self.__socket = None # Set up our socket variable.
 
+    '''
+    This function requests the data that the server is holding. The server
+    is specified by the ip and port supplied to the client.
+    '''
     def requestData(self):
         self.__socket = socket(AF_INET, SOCK_STREAM) # Initialize Socket.
         self.__socket.connect((self.__ip, self.__port)) # Connect socket.
