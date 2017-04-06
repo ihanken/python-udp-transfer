@@ -2,6 +2,7 @@ from socket import *
 from sys import *
 import struct
 from constants import *
+import errno
 
 class Client():
     def __init__(self, args):
@@ -13,10 +14,43 @@ class Client():
         self.__ip = self.parseIPArgument() # Parse our IP.
         self.__port = self.parsePortArgument() # Parse our port.
         self.__address = (self.__ip, self.__port) # Create a tuple from the values.
+        self.__socket = None # Set up our socket variable.
 
-        print(self.__address)
+    def requestData(self):
+        self.__socket = socket(AF_INET, SOCK_STREAM) # Initialize Socket.
+        self.__socket.connect((self.__ip, self.__port)) # Connect socket.
+        self.__socket.settimeout(2.0) # Give the socket a 2 second timeout.
 
-        self.__socket = socket(AF_INET, SOCK_DGRAM) # Set up our socket.
+        sequenceNumber = 0  # A record of the current sequenceNumber reached.
+        ACK = 0             # A record of the acknowledgement number.
+        data = []           # A record of the data received.
+
+        _ = input("Press enter to begin transmission.") # Prompt user to begin.
+        print("Requesting data from server...\n")
+
+        while True:
+            try:
+                self.__socket.send(str(ACK).encode("utf-8")) # Set up the connection.
+                received = self.__socket.recv(1024).decode("utf-8") # Get data.
+
+                ACK = received[-1:] # Get the number we need to ACK.
+                message = received.split('^')[0] # Only grab first message.
+
+                if message == CLOSING_MESSAGE: break # Stop if we have all data.
+                else: # Keep ACKing
+                    if ACK == str(sequenceNumber): # We are ready to move on.
+                        sequenceNumber ^= 1 # Invert the sequenceNumber
+
+                        data.append(message) # Append out data.
+
+                        self.__socket.send(str(ACK).encode("utf-8")) # Send ACK
+            except timeout: print("Timed out.") # Handle a time out.
+            except error: break # Prevents a discontinued connection from
+                                # breaking the script.
+
+        self.__socket.close() # Close the socket.
+
+        return data
 
     ''' Parse the IP address. Fails if no IP is provided. '''
     def parseIPArgument(self):
@@ -44,3 +78,7 @@ class Client():
 
 if __name__ == "__main__":
     client = Client(argv)
+    data = client.requestData()
+
+    print("Raw data: {}".format(data))
+    print("Joined data: \"{}\"".format(' '.join(data)))

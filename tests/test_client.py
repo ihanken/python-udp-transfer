@@ -30,8 +30,3 @@ class TestClient(unittest.TestCase):
     def testRequestFile(self):
         self.assertEqual(self.__clientOne.requestFile("testfile.txt"),
                                                         "testfile.txt")
-
-    def testBeginReceiving(self):
-        self.assertEqual(self.__clientOne.beginReceiving(), 1024)
-        self.assertEqual(self.__clientOne.beginReceiving(1025), 1025)
-        self.assertNotEqual(self.__clientOne.beginReceiving(1025), 1024)
