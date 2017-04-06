@@ -2,7 +2,6 @@ from socket import *
 from sys import *
 import struct
 from constants import *
-import time
 
 class Server():
     def __init__(self, args):
