@@ -2,7 +2,6 @@ from socket import *
 from sys import *
 import struct
 from constants import *
-import re
 
 class Server():
     def __init__(self, args):
@@ -18,9 +17,9 @@ class Server():
 
     '''
     This function allows the server to listen to requests through the
-    provided port. It uses alternating bit as the protocol to send data.
+    provided port.
     '''
-    def beginListeningWithAlternatingBit(self):
+    def beginListening(self):
         self.__socket = socket(AF_INET, SOCK_STREAM) # Initialize our socket.
         self.__socket.bind(self.__address) # Bind the socket to the address.
         self.__socket.listen(1) # Specify a window size of 1.
@@ -60,60 +59,6 @@ class Server():
             # We're finished.
             print("Sent \"{}\" to receiver.".format(' '.join(data)))
 
-    '''
-    This function allows the server to listen to requests through the
-    provided port. It uses alternating bit as the protocol to send data.
-    '''
-    def beginListeningWithSelectiveRepeat(self):
-        self.__socket = socket(AF_INET, SOCK_STREAM) # Initialize our socket.
-        self.__socket.bind(self.__address) # Bind the socket to the address.
-        self.__socket.listen(1) # Specify a window size of 1.
-
-        print("Listening")
-
-        while True:
-            connectionSocket, _ = self.__socket.accept() # Begin listening
-
-            data = ["I", "love", "to", "socket", "program.", "It", "is", "the",
-                    "best", "type", "of", "programming."
-            ] # Our data to send.
-
-            ackedIndices = set() # A set to keep track of our ACKs.
-
-            while len(ackedIndices) < len(data): # Keep going until we have all ACKs.
-                currentData = [(data[i], i) for i in range(len(data))
-                                if i not in ackedIndices] # Only add non-ACKed packets.
-
-                # Our window size is 4
-                currentData = currentData[:max(4, len(currentData))]
-
-                for datum in currentData: # Iterate through our window.
-                    # Create the next packet.
-                    packet = datum[0] + '^' + str(datum[1])
-                    connectionSocket.send(packet.encode("utf-8")) # Send packet.
-
-                    ACK = connectionSocket.recv(1024).decode("utf-8") # Receive data
-
-                    ACK = ACK.split()[1] # Get the number at the end.
-
-                    try:
-                        # Strip all characters except numbers.
-                        ACK = int(re.sub("[^0-9]", "", ACK))
-
-                        # Only add ACKs to the set if they are in the proper range.
-                        if 0 <= int(ACK) < len(data): ackedIndices.add(int(ACK))
-                    except ValueError: pass # Handles the empty ACK to start.
-
-            # We're finished.
-            print("Sent {} to the receiver.".format(' '.join(data)))
-
-            print(ackedIndices)
-
-            # Create the closing message.
-            closing = CLOSING_MESSAGE + '^' + str(len(data))
-
-            connectionSocket.send(closing.encode("utf-8")) # Send closing.
-            connectionSocket.close() # Close the connection
 
     ''' Parse the port. Fails if no value is provided or the value is invalid. '''
     def parsePortArgument(self):
@@ -133,4 +78,4 @@ class Server():
 if __name__ == "__main__":
     server = Server(argv)
 
-    server.beginListeningWithSelectiveRepeat()
+    server.beginListening()
