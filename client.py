@@ -68,12 +68,12 @@ class Client():
         self.__socket.connect((self.__ip, self.__port)) # Connect socket.
         self.__socket.settimeout(2.0) # Give the socket a 2 second timeout.
 
-        data = []           # A record of the data received.
+        data = [] # A record of the data received.
 
         _ = input("Press enter to begin transmission.") # Prompt user to begin.
         print("Requesting data from server...\n")
 
-        ACK = None
+        ACK = None # Send an empty ACK to start transmission.
 
         while True:
             try:

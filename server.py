@@ -78,32 +78,31 @@ class Server():
                     "best", "type", "of", "programming."
             ] # Our data to send.
 
-            ackedIndices = set()
+            ackedIndices = set() # A set to keep track of our ACKs.
 
-            while len(ackedIndices) < len(data):
+            while len(ackedIndices) < len(data): # Keep going until we have all ACKs.
                 currentData = [(data[i], i) for i in range(len(data))
-                                if i not in ackedIndices]
+                                if i not in ackedIndices] # Only add non-ACKed packets.
 
+                # Our window size is 4
                 currentData = currentData[:max(4, len(currentData))]
 
-                for datum in currentData:
+                for datum in currentData: # Iterate through our window.
                     # Create the next packet.
                     packet = datum[0] + '^' + str(datum[1])
                     connectionSocket.send(packet.encode("utf-8")) # Send packet.
 
                     ACK = connectionSocket.recv(1024).decode("utf-8") # Receive data
 
-                    ACK = ACK.split()[1]
+                    ACK = ACK.split()[1] # Get the number at the end.
 
                     try:
+                        # Strip all characters except numbers.
                         ACK = int(re.sub("[^0-9]", "", ACK))
 
-                        if 0 <= int(ACK) < len(data):
-                            print("Adding ACK {}".format(int(ACK)))
-                            ackedIndices.add(int(ACK))
-                    except ValueError: pass
-
-                    #print(ackedIndices)
+                        # Only add ACKs to the set if they are in the proper range.
+                        if 0 <= int(ACK) < len(data): ackedIndices.add(int(ACK))
+                    except ValueError: pass # Handles the empty ACK to start.
 
             # We're finished.
             print("Sent {} to the receiver.".format(' '.join(data)))
